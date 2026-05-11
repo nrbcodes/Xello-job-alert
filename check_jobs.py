@@ -7,8 +7,8 @@ import os
 from email_template import build_html_email
 
 URL = "https://xello.applytojob.com/apply"
-# QA_KEYWORDS = ["qa", "quality assurance", "quality engineer", "test engineer", "sdet", "automation engineer"]
-QA_KEYWORDS = ["principal", "software"]
+QA_KEYWORDS = ["qa", "quality assurance", "quality engineer", "test engineer", "sdet", "automation engineer"]
+
 
 def fetch_jobs():
     res = requests.get(URL, headers={"User-Agent": "Mozilla/5.0"})
