@@ -1,9 +1,16 @@
-name: Daily QA Job Check
+name: QA Job Alert
 
 on:
   schedule:
-    - cron: '0 9 * * *'  # Every day at 9:00 AM UTC (2:30 PM IST)
+    - cron: '30 3 * * *'    # 9:00 AM IST  (daily check)
+    - cron: '30 11 * * *'   # 5:00 PM IST  (daily check)
+    - cron: '30 3 * * 0'    # 9:00 AM IST  Sunday (weekly summary)
   workflow_dispatch:
+    inputs:
+      run_mode:
+        description: 'Run mode: daily or weekly'
+        required: false
+        default: 'daily'
 
 jobs:
   check-jobs:
@@ -16,8 +23,39 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install requests beautifulsoup4
-      - run: python check_jobs.py
+
+      - name: Run daily check (9AM IST)
+        if: github.event.schedule == '30 3 * * *'
+        run: python check_jobs.py
         env:
+          RUN_MODE: daily
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_PASS: ${{ secrets.GMAIL_PASS }}
+          NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
+
+      - name: Run daily check (5PM IST)
+        if: github.event.schedule == '30 11 * * *'
+        run: python check_jobs.py
+        env:
+          RUN_MODE: daily
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_PASS: ${{ secrets.GMAIL_PASS }}
+          NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
+
+      - name: Run weekly summary (Sunday)
+        if: github.event.schedule == '30 3 * * 0'
+        run: python check_jobs.py
+        env:
+          RUN_MODE: weekly
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_PASS: ${{ secrets.GMAIL_PASS }}
+          NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
+
+      - name: Run manual trigger
+        if: github.event_name == 'workflow_dispatch'
+        run: python check_jobs.py
+        env:
+          RUN_MODE: ${{ github.event.inputs.run_mode }}
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_PASS: ${{ secrets.GMAIL_PASS }}
           NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
