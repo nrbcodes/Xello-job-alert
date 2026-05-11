@@ -3,11 +3,13 @@ name: Daily QA Job Check
 on:
   schedule:
     - cron: '0 9 * * *'  # Every day at 9:00 AM UTC (2:30 PM IST)
-  workflow_dispatch:       # Allows manual trigger
+  workflow_dispatch:
 
 jobs:
   check-jobs:
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
