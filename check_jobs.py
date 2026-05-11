@@ -8,12 +8,13 @@ from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email_template import build_html_email, build_weekly_summary_email, build_error_email
+from stats_tracker import update_stats, get_stats, reset_stats
 
 URL = "https://xello.applytojob.com/apply"
-# QA_KEYWORDS = ["qa", "quality assurance", "quality engineer", "test engineer", "sdet", "automation engineer"]
-QA_KEYWORDS = ["principal", "software"]
+QA_KEYWORDS = ["qa", "quality assurance", "quality engineer", "test engineer", "sdet", "automation engineer"]
+# QA_KEYWORDS = ["principal", "software"]
 MAX_RETRIES = 3
-RETRY_DELAY = 10  # seconds between retries
+RETRY_DELAY = 10
 
 def fetch_jobs():
     for attempt in range(1, MAX_RETRIES + 1):
@@ -65,26 +66,32 @@ def send_email(subject, html_content):
     print("Email sent!")
 
 if __name__ == "__main__":
-    run_mode = os.environ.get("RUN_MODE", "daily")  # "daily" or "weekly"
+    run_mode = os.environ.get("RUN_MODE", "daily")
     run_time = datetime.now().strftime("%B %d, %Y at %I:%M %p")
 
     try:
-        jobs = fetch_jobs()
-        qa_jobs = filter_qa_jobs(jobs)
-        print(f"Found {len(qa_jobs)} QA job(s).")
-
         if run_mode == "weekly":
-            # Weekly summary — send regardless of whether jobs were found
-            checks_done = 14  # 2 checks/day × 7 days
-            html = build_weekly_summary_email(URL, checks_done)
+            # Read real stats before resetting
+            stats = get_stats()
+            print(f"Weekly stats: {stats}")
+            html = build_weekly_summary_email(URL, stats["checks_done"], stats["qa_jobs_found"])
             send_email("📋 Weekly Job Alert Summary — Xello", html)
-
-        elif qa_jobs:
-            html = build_html_email(qa_jobs, URL)
-            send_email(f"🎯 {len(qa_jobs)} QA Job(s) Found at Xello!", html)
+            # Reset stats for the new week
+            reset_stats()
 
         else:
-            print("No QA jobs found. No email sent.")
+            jobs = fetch_jobs()
+            qa_jobs = filter_qa_jobs(jobs)
+            print(f"Found {len(qa_jobs)} QA job(s).")
+
+            # Always update stats after a successful check
+            update_stats(len(qa_jobs))
+
+            if qa_jobs:
+                html = build_html_email(qa_jobs, URL)
+                send_email(f"🎯 {len(qa_jobs)} QA Job(s) Found at Xello!", html)
+            else:
+                print("No QA jobs found. No email sent.")
 
     except Exception as e:
         print(f"ERROR: {e}")
