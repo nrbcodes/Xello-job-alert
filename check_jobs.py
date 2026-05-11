@@ -1,11 +1,14 @@
 import requests
 from bs4 import BeautifulSoup
 import smtplib
+from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import os
+from email_template import build_html_email
 
 URL = "https://xello.applytojob.com/apply"
-QA_KEYWORDS = ["qa", "quality assurance", "quality engineer", "test engineer", "sdet", "automation engineer", "senior"]
+# QA_KEYWORDS = ["qa", "quality assurance", "quality engineer", "test engineer", "sdet", "automation engineer"]
+QA_KEYWORDS = ["principal", "software"]
 
 def fetch_jobs():
     res = requests.get(URL, headers={"User-Agent": "Mozilla/5.0"})
@@ -26,15 +29,13 @@ def send_email(qa_jobs):
     password = os.environ["GMAIL_PASS"]
     recipient = os.environ["NOTIFY_EMAIL"]
 
-    body = "🎯 QA Job Alert at Xello!\n\n"
-    for job in qa_jobs:
-        body += f"• {job['title']}\n  {job['url']}\n\n"
-    body += f"\nFull listing: {URL}"
-
-    msg = MIMEText(body)
-    msg["Subject"] = f"[Job Alert] {len(qa_jobs)} QA Job(s) Found at Xello!"
-    msg["From"] = sender
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = f"🎯 {len(qa_jobs)} QA Job(s) Found at Xello!"
+    msg["From"] = f"Job Alert Bot <{sender}>"
     msg["To"] = recipient
+
+    html_content = build_html_email(qa_jobs, URL)
+    msg.attach(MIMEText(html_content, "html"))
 
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
         smtp.login(sender, password)
