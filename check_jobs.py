@@ -5,8 +5,7 @@ from email.mime.text import MIMEText
 import os
 
 URL = "https://xello.applytojob.com/apply"
-# QA_KEYWORDS = ["qa", "quality assurance", "quality engineer", "test engineer", "sdet", "automation engineer"]
-QA_KEYWORDS = ["principal", "software", "engineer"]
+QA_KEYWORDS = ["qa", "quality assurance", "quality engineer", "test engineer", "sdet", "automation engineer", "senior"]
 
 def fetch_jobs():
     res = requests.get(URL, headers={"User-Agent": "Mozilla/5.0"})
