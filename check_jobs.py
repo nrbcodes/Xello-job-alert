@@ -10,7 +10,8 @@ from email.mime.text import MIMEText
 from email_template import build_html_email, build_weekly_summary_email, build_error_email
 
 URL = "https://xello.applytojob.com/apply"
-QA_KEYWORDS = ["qa", "quality assurance", "quality engineer", "test engineer", "sdet", "automation engineer"]
+# QA_KEYWORDS = ["qa", "quality assurance", "quality engineer", "test engineer", "sdet", "automation engineer"]
+QA_KEYWORDS = ["principal", "software"]
 MAX_RETRIES = 3
 RETRY_DELAY = 10  # seconds between retries
 
