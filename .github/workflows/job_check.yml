@@ -2,9 +2,9 @@ name: QA Job Alert
 
 on:
   schedule:
-    - cron: '30 3 * * *'    # 9:00 AM IST  (daily check)
-    - cron: '30 11 * * *'   # 5:00 PM IST  (daily check)
-    - cron: '30 3 * * 0'    # 9:00 AM IST  Sunday (weekly summary)
+    - cron: '30 3 * * 1-6'   # 9:00 AM IST  Mon–Sat (daily check)
+    - cron: '30 11 * * 1-6'  # 5:00 PM IST  Mon–Sat (daily check)
+    - cron: '30 3 * * 0'     # 9:00 AM IST  Sunday  (weekly summary)
   workflow_dispatch:
     inputs:
       run_mode:
@@ -25,7 +25,7 @@ jobs:
       - run: pip install requests beautifulsoup4
 
       - name: Run daily check (9AM IST)
-        if: github.event.schedule == '30 3 * * *'
+        if: github.event.schedule == '30 3 * * 1-6'
         run: python check_jobs.py
         env:
           RUN_MODE: daily
@@ -34,7 +34,7 @@ jobs:
           NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
 
       - name: Run daily check (5PM IST)
-        if: github.event.schedule == '30 11 * * *'
+        if: github.event.schedule == '30 11 * * 1-6'
         run: python check_jobs.py
         env:
           RUN_MODE: daily
@@ -59,3 +59,12 @@ jobs:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_PASS: ${{ secrets.GMAIL_PASS }}
           NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
+
+      # Commit updated stats.json back to the repo
+      - name: Commit stats
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add stats.json
+          git diff --staged --quiet || git commit -m "chore: update weekly stats [skip ci]"
+          git push
