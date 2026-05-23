@@ -11,7 +11,7 @@ from email_template import build_html_email, build_weekly_summary_email, build_e
 from stats_tracker import update_stats, get_stats, reset_stats
 
 URL = "https://xello.applytojob.com/apply"
-QA_KEYWORDS = ["qa", "quality assurance", "quality enjjjgineer", "test engineer", "sdet", "automation engineer"]
+QA_KEYWORDS = ["qa", "quality assurance", "quality engineer", "test engineer", "sdet", "automation engineer"]
 # QA_KEYWORDS = ["principal", "software"]
 MAX_RETRIES = 3
 RETRY_DELAY = 10
